@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# datasets (downloaded automatically by the scripts)
+data/
+
+# quick smoke-test outputs (not part of the reported results)
+results_quick/
+*_quick.csv
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# assignment reports are submitted separately, not published here
+docs/
