@@ -508,7 +508,7 @@ def _style(ax):
         ax.spines[s].set_visible(False)
     for s in ("left", "bottom"):
         ax.spines[s].set_color(INK2)
-    ax.tick_params(colors=INK2, labelsize=8)
+    ax.tick_params(colors=INK2, labelsize=11)
     ax.grid(axis="y", color=GRID, linewidth=0.6)
     ax.set_axisbelow(True)
 
@@ -517,6 +517,9 @@ def plot():
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    # larger default text so figures stay readable when scaled to A4 width
+    plt.rcParams.update({"font.size": 12, "xtick.labelsize": 11, "ytick.labelsize": 11,
+                         "axes.labelsize": 12, "legend.fontsize": 11})
     FIG_DIR.mkdir(parents=True, exist_ok=True)
     logs = pd.read_csv(RESULTS / "training_logs.csv")
     summ = pd.read_csv(RESULTS / "summary.csv")
@@ -525,7 +528,7 @@ def plot():
     cen = logs[logs.method == "centralized"].groupby("epochs_equiv").test_acc.agg(["mean", "std"])
 
     # Fig 1: test accuracy vs training budget, one panel per local-epoch setting
-    fig, axes = plt.subplots(1, len(Es), figsize=(5 * len(Es), 4), sharey=True)
+    fig, axes = plt.subplots(1, len(Es), figsize=(4.4 * len(Es), 4.6), sharey=True)
     axes = np.atleast_1d(axes)
     for ax, E in zip(axes, Es):
         ax.plot(cen.index, cen["mean"], color=INK, lw=2, label="Centralized")
@@ -536,13 +539,13 @@ def plot():
             ax.plot(g.index, g["mean"], color=SERIES[j], lw=2, marker="o" if E > 1 else None, ms=4,
                     label=PART_LABEL[p])
             ax.fill_between(g.index, g["mean"] - g["std"], g["mean"] + g["std"], color=SERIES[j], alpha=0.15)
-        ax.set_title(f"FedAvg with E = {E} local epoch(s)  ({CFG['budget_epochs'] // E} rounds)",
-                     fontsize=10, color=INK)
-        ax.set_xlabel("training budget used (epochs over the full dataset)", fontsize=8, color=INK2)
+        ax.set_title(f"E = {E} local epoch(s), {CFG['budget_epochs'] // E} rounds",
+                     fontsize=14, color=INK)
+        ax.set_xlabel("budget used (data passes)", fontsize=12.8, color=INK2)
         _style(ax)
-    axes[0].set_ylabel("test accuracy (mean ± sd, 3 seeds)", fontsize=8, color=INK2)
+    axes[0].set_ylabel("test accuracy", fontsize=12.8, color=INK2)
     axes[0].set_ylim(max(0, logs.test_acc.min() - 0.02), 0.95)
-    axes[-1].legend(fontsize=7, frameon=False, loc="lower right")
+    axes[-1].legend(fontsize=11.2, frameon=False, loc="lower right")
     fig.tight_layout()
     fig.savefig(FIG_DIR / "fig1_accuracy_curves.png", dpi=200)
     plt.close(fig)
@@ -557,11 +560,11 @@ def plot():
         x = np.arange(len(parts)) + (k - (len(Es) - 1) / 2) * width
         ax.bar(x, d.gap_to_central_pp, width=width * 0.92, color=SERIES[k], label=f"E = {E}",
                yerr=100 * d.test_acc_std, error_kw={"elinewidth": 1, "ecolor": INK2})
-    ax.set_xticks(range(len(parts)), [PART_LABEL[p].replace(" (", "\n(") for p in parts], fontsize=8)
-    ax.set_ylabel("accuracy gap to centralized (percentage points)", fontsize=8, color=INK2)
+    ax.set_xticks(range(len(parts)), [PART_LABEL[p].replace(" (", "\n(") for p in parts], fontsize=12.8)
+    ax.set_ylabel("gap to centralized (pp)", fontsize=12.8, color=INK2)
     ax.set_title("Test-accuracy gap to centralized after the full 30-pass budget\n(final round, ± sd over 3 seeds; lower is better)",
-                 fontsize=10, color=INK)
-    ax.legend(fontsize=8, frameon=False)
+                 fontsize=14, color=INK)
+    ax.legend(fontsize=12.8, frameon=False)
     _style(ax)
     fig.tight_layout()
     fig.savefig(FIG_DIR / "fig2_gap_to_centralized.png", dpi=200)
@@ -574,28 +577,28 @@ def plot():
             d = logs[(logs.method == "fedavg") & (logs.partition == p) & (logs.local_epochs.astype(str) == str(E))]
             g = d.groupby("round").client_drift.mean()
             ax.plot(g.index, g.values, color=SERIES[j], lw=2, label=PART_LABEL[p])
-        ax.set_title(f"Client drift, E = {E}", fontsize=10, color=INK)
-        ax.set_xlabel("communication round", fontsize=8, color=INK2)
+        ax.set_title(f"Client drift, E = {E}", fontsize=14, color=INK)
+        ax.set_xlabel("communication round", fontsize=12.8, color=INK2)
         _style(ax)
-    axes[0].set_ylabel("mean ||w_k − w_avg||₂", fontsize=8, color=INK2)
-    axes[1].legend(fontsize=7, frameon=False)
+    axes[0].set_ylabel("mean ||w_k − w_avg||₂", fontsize=12.8, color=INK2)
+    axes[1].legend(fontsize=11.2, frameon=False)
     fig.tight_layout()
     fig.savefig(FIG_DIR / "fig3_client_drift.png", dpi=200)
     plt.close(fig)
 
     # Fig 4: client label distributions (seed 0) for each partition
     hists = json.loads((RESULTS / "client_label_histograms.json").read_text())
-    fig, axes = plt.subplots(1, len(parts), figsize=(3.2 * len(parts), 3.2))
+    fig, axes = plt.subplots(1, len(parts), figsize=(2.9 * len(parts), 3.6))
     for ax, p in zip(np.atleast_1d(axes), parts):
         h = np.array(hists[f"{p}|{CFG['seeds'][0]}"], float)
         ax.imshow(h / h.sum(1, keepdims=True), cmap="Blues", vmin=0, vmax=1, aspect="auto")
-        ax.set_title(PART_LABEL[p].replace(" (", "\n("), fontsize=8, color=INK)
-        ax.set_xlabel("class", fontsize=7, color=INK2)
+        ax.set_title(PART_LABEL[p].replace(" (", "\n("), fontsize=12.8, color=INK)
+        ax.set_xlabel("class", fontsize=11.2, color=INK2)
         ax.set_xticks(range(10))
         ax.set_yticks(range(h.shape[0]))
         ax.tick_params(labelsize=6, colors=INK2)
-    np.atleast_1d(axes)[0].set_ylabel("client", fontsize=7, color=INK2)
-    fig.suptitle("Share of each class in each client's data (seed 0)", fontsize=10, color=INK)
+    np.atleast_1d(axes)[0].set_ylabel("client", fontsize=11.2, color=INK2)
+    fig.suptitle("Share of each class in each client's data (seed 0)", fontsize=14, color=INK)
     fig.tight_layout()
     fig.savefig(FIG_DIR / "fig4_client_label_distributions.png", dpi=200)
     plt.close(fig)
@@ -613,12 +616,12 @@ def plot():
             x = np.arange(len(parts)) + (k - (len(mets) - 1) / 2) * width
             ax.bar(x, g["mean"], width=width * 0.92, color=SERIES[k], label=lab,
                    yerr=g["std"], error_kw={"elinewidth": 1, "ecolor": INK2})
-        ax.set_xticks(range(len(parts)), [PART_LABEL[p].replace(" (", "\n(") for p in parts], fontsize=8)
+        ax.set_xticks(range(len(parts)), [PART_LABEL[p].replace(" (", "\n(") for p in parts], fontsize=12.8)
         ax.set_ylim(-0.25, 1.3)
-        ax.set_ylabel("attack success (1 = perfect)", fontsize=8, color=INK2)
-        ax.set_title("Server infers each client's label mix from ONE model update", fontsize=10, color=INK)
-        ax.legend(fontsize=7, frameon=False, loc="upper center", ncol=3)
-        ax.text(0, 0.45, "uniform mix:\nnothing to infer", ha="center", fontsize=7, color=INK2)
+        ax.set_ylabel("attack success (1 = perfect)", fontsize=12.8, color=INK2)
+        ax.set_title("Server infers each client's label mix from ONE model update", fontsize=14, color=INK)
+        ax.legend(fontsize=11.2, frameon=False, loc="upper center", ncol=3)
+        ax.text(0, 0.45, "uniform mix:\nnothing to infer", ha="center", fontsize=11.2, color=INK2)
         _style(ax)
         fig.tight_layout()
         fig.savefig(FIG_DIR / "fig5_privacy_label_inference.png", dpi=200)
