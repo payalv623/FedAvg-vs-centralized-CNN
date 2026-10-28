@@ -1,38 +1,7 @@
 """
-fedavg_vs_centralized.py  --  Federated Averaging vs centralized CNN training (Assignment 3, Q2)
-==============================================================================================
+fedavg_vs_centralized.py  --  Federated Averaging vs centralized CNN training
+============================================================================
 
-What this script does
----------------------
-1. Loads Fashion-MNIST once and keeps it on the GPU (fast, no DataLoader overhead).
-2. Defines ONE small CNN architecture used in every experiment.
-3. Centralized baseline: SGD on the union of all client data (= the full
-   60k training set).
-4. FedAvg (McMahan et al., 2017): K = 10 simulated clients; in each round every
-   client starts from the global model, trains E local epochs with SGD on its own
-   data, and the server replaces the global model with the sample-size-weighted
-   average of the client models:  w_global = sum_k (n_k / n) * w_k.
-5. Data heterogeneity: IID split, Dirichlet(alpha) label-skew splits with
-   alpha in {1.0, 0.3, 0.1}, and a "pathological" split (2 classes per client).
-6. Equal training budget: every configuration processes each training example
-   the same number of times (BUDGET_EPOCHS), i.e. the same number of
-   per-example gradient computations. For FedAvg, rounds R = BUDGET / E.
-   Caveat (stated in the report): the number of SEQUENTIAL SGD steps differs.
-   Centralized training takes 30 x 938 = 28,140 sequential steps; in FedAvg each
-   client takes only ~94 x E steps per round (the 10 clients run in parallel)
-   and the server averages R times, so the global model sees R aggregated
-   updates. "Equal budget" here means equal data passes / compute, not equal
-   optimisation steps.
-7. Privacy probe: an honest-but-curious server tries to infer each client's
-   label distribution from the client's model update alone (no raw data).
-   This tests the common claim "FL is private because data never leaves the
-   client".
-8. Everything is logged to results/*.csv / *.json and plotted to results/figures.
-
-Usage (from the project root, venv activated):
-  python q2_federated/fedavg_vs_centralized.py run          # all experiments (~45-60 min on an RTX 5090)
-  python q2_federated/fedavg_vs_centralized.py run --quick  # tiny smoke test
-  python q2_federated/fedavg_vs_centralized.py plot         # figures from saved results
 """
 
 import argparse
@@ -49,9 +18,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 HERE = Path(__file__).resolve().parent
-# shared with the other question when run inside the assignment folder; a
-# standalone clone of this repository downloads Fashion-MNIST into ./data instead
-DATA_DIR = HERE.parent / "data" if (HERE.parent / "data").exists() else HERE / "data"            # shared with Q3
+# use a shared ../data folder if one exists, otherwise download Fashion-MNIST into ./data
+DATA_DIR = HERE.parent / "data" if (HERE.parent / "data").exists() else HERE / "data"
 RESULTS = HERE / "results"
 FIG_DIR = RESULTS / "figures"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -130,7 +98,7 @@ def partition(labels, kind, num_clients, seed, num_classes=10):
         shards = np.array_split(order, num_clients * per_client)
         # Each shard holds a single class. Re-draw the shard assignment until no
         # client receives two shards of the SAME class, so every client really has
-        # `per_client` distinct classes (v1 could give a client 1 class only).
+        # `per_client` distinct classes.
         while True:
             shard_ids = rng.permutation(len(shards))
             parts = [np.sort(np.concatenate([shards[s] for s in shard_ids[k::num_clients]]))
