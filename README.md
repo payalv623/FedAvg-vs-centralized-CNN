@@ -6,6 +6,7 @@ An implementation of **Federated Averaging (FedAvg)** compared against **central
 - What privacy claims can and cannot be made when data stay on the clients?
 
 This is Question 2 of Assignment 3 for *Responsible AI for Foundation Models (DSE428/DSE628)*, IISER Bhopal.
+The report covering all three questions is in [`docs/`](docs): [short version, 4 pages](docs/Assignment3_Short_Report.pdf) and [full report](docs/Assignment3_Report.pdf).
 
 ## Setup
 
@@ -58,4 +59,4 @@ Files:
 
 ## AI use
 
-All code was generated with **Claude Opus 5.5** (Anthropic, `claude-opus-5-5`) through Claude Code, following my prompts. The complete, verbatim prompt log is included in the assignment report submitted for the course.
+All code was generated with **Claude Opus 5.5** (Anthropic, `claude-opus-5-5`) through Claude Code, following my prompts. The complete, verbatim prompt log is in Appendix A of the [full report](docs/Assignment3_Report.pdf).
