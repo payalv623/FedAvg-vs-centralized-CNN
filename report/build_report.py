@@ -208,11 +208,12 @@ def q3_tables():
         d["auc"] = d.apply(lambda r: f"{r.mia_auc:.3f} [{r.mia_auc_ci_low:.3f}, {r.mia_auc_ci_high:.3f}]", axis=1)
         d["bound"] = d.eps_bound_adv.map(lambda v: f"{v:.3f}")
         d["cf"] = d.clipped_frac.map(lambda v: "&ndash;" if pd.isna(v) else pct(v))
-        return table(d, ["name", "n_train", "acc", "eps", "auc", "mia_advantage", "bound", "gen_gap", "cf", "train_s"],
-                     ["Run", "N", "Test acc. % (mean &plusmn; sd)", "&epsilon; (&delta;=10<sup>-5</sup>)",
+        return table(d, ["name", "n_train", "acc", "test_loss", "eps", "auc", "mia_advantage", "bound", "gen_gap", "cf", "train_s"],
+                     ["Run", "N", "Test acc. % (mean &plusmn; sd)", "Test loss", "&epsilon; (&delta;=10<sup>-5</sup>)",
                       "MIA AUC [95% CI]", "MIA adv.", "DP adv. bound", "Train&minus;test gap", "Clipped frac.",
                       "Train time (s)"],
                      {"n_train": lambda v: f"{int(v):,}", "mia_advantage": lambda v: f"{v:.3f}",
+                      "test_loss": lambda v: f"{v:.3f}" if v < 100 else f"{v:,.0f}",
                       "gen_gap": lambda v: f"{v:.3f}", "train_s": lambda v: f"{v:.0f}"}, cls="small")
     g = s[s.exp == "grid"].copy()
     g["o"] = g["clip"] * 100 + g.sigma
@@ -318,6 +319,8 @@ PROMPT_LOG = [
     ('73', '', 'push the latex report code in the repo okay'),
     ('74', '', 'yes push'),
     ('75', '', 'thanks - have yuou update the report right'),
+    ('76', '', 'The report describes per-example clipping, Gaussian noise, privacy accounting, more than the required number of noise and clipping settings, a non-private baseline, an accuracy–privacy plot, and a membership inference attack. It does not clearly report test loss or elapsed training time, both requested.\ndo it and push the code now'),
+    ('77', '', 'do faster'),
 ]
 
 
@@ -695,7 +698,21 @@ clip-only runs (&sigma; = 0) for each C and the non-private baseline; (B) traini
 chosen from measured per-example gradient norms (median ~0.5 later in training, 90th percentile ~16).</p>
 
 <h3>3.2 Results: privacy, utility and convergence</h3>
+<p><b>Training record.</b> Every run logs test accuracy, test loss and training time after each epoch; the tables below
+give the final values (mean over 3 seeds). <b>Optimiser settings</b>, identical for private and non-private runs: SGD
+with learning rate 0.05, momentum 0.9, no weight decay, batch size 256 (expected size under Poisson sampling for DP),
+20 epochs (100 in the duration experiment). <b>Training time</b> counts only the optimisation steps (forward,
+backward, clipping, noise and update), not the evaluation, on one GPU.</p>
+<p class='note'><b>Table 3.2.</b> Final results after 20 epochs on N = 60,000 (mean over 3 seeds).</p>
 {t_q3grid}
+<ul>
+<li><b>Test loss</b> rises with the noise level faster than accuracy falls: 0.41 for the non-private model, 0.93 for
+&sigma; = 1, C = 0.5 and 5.52 for &sigma; = 4, C = 0.5, i.e. noisy models become poorly calibrated even when their
+accuracy is still reasonable. With C = 8 and &sigma; &ge; 1 the loss explodes (4.9 to 6,282), confirming that these runs
+do not train.</li>
+<li><b>Training time:</b> the non-private model trains in 12.5 s for 20 epochs, the DP runs in 21&ndash;57 s, i.e. about
+1.7&ndash;4.6&times; slower, because a gradient must be computed and clipped for every example separately.</li>
+</ul>
 {fig(F3 / "fig1_accuracy_vs_epsilon.png", "q3_fig1.png", "<b>Figure 3.1.</b> Test accuracy after 20 epochs against the achieved privacy budget &epsilon; (log scale), per clipping norm. Dotted lines: clip-only runs (&sigma;=0); dashed: non-private baseline.", "92%")}
 <p><b>What happens as noise increases.</b> At C = 0.5, raising &sigma; from 0.5 to 4 lowers &epsilon; from 14.3 to
 0.27 (a much stronger guarantee) while test accuracy falls from 84.6% to 73.4%; the non-private model reaches 91.5%.

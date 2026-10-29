@@ -142,17 +142,17 @@ Pathological (2 classes/\allowbreak{}client) & 77.8 $\pm$ 3.4 & 76.1 $\pm$ 4.0 &
 \item \textbf{Grid:} $\sigma$ $\in$ \{0.5, 1, 2, 4\} $\times$ C $\in$ \{0.5, 2, 8\} + clip-only + non-private baseline, 3 seeds.
 \item \textbf{Membership inference:} loss-threshold attack (training members vs held-out test images).
 \end{itemize}
-{\footnotesize\setlength{\tabcolsep}{3pt}
-\begin{longtable}{>{\raggedright\arraybackslash}p{0.323\linewidth}>{\raggedright\arraybackslash}p{0.149\linewidth}>{\raggedright\arraybackslash}p{0.149\linewidth}>{\raggedright\arraybackslash}p{0.050\linewidth}>{\raggedright\arraybackslash}p{0.050\linewidth}>{\raggedright\arraybackslash}p{0.187\linewidth}}
+{\scriptsize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.209\linewidth}>{\raggedright\arraybackslash}p{0.096\linewidth}>{\raggedright\arraybackslash}p{0.096\linewidth}>{\raggedright\arraybackslash}p{0.032\linewidth}>{\raggedright\arraybackslash}p{0.032\linewidth}>{\raggedright\arraybackslash}p{0.137\linewidth}>{\raggedright\arraybackslash}p{0.161\linewidth}>{\raggedright\arraybackslash}p{0.121\linewidth}}
 \toprule
-\textbf{Setting (N=60k, 20 epochs)} & \textbf{$\varepsilon$ ($\delta$=10\textsuperscript{-5})} & \textbf{Acc. \% C=0.5} & \textbf{C=2} & \textbf{C=8} & \textbf{MIA AUC (C=0.5)} \\
+\textbf{Setting (N=60k, 20 epochs)} & \textbf{$\varepsilon$ ($\delta$=10\textsuperscript{-5})} & \textbf{Acc. \% C=0.5} & \textbf{C=2} & \textbf{C=8} & \textbf{Test loss (C=0.5)} & \textbf{Train time s (C=0.5)} & \textbf{MIA AUC (C=0.5)} \\
 \midrule\endhead
-non-private & $\infty$ & 91.5 &  &  & 0.523 \\
-clip only ($\sigma$=0) & $\infty$ & 84.7 & 88.5 & 91.7 & 0.505 \\
-$\sigma$ = 0.5 & 14.28 & 84.6 & 86.2 & 81.3 & 0.505 \\
-$\sigma$ = 1 & 1.76 & 84.1 & 81.5 & 54.5 & 0.506 \\
-$\sigma$ = 2 & 0.62 & 81.6 & 71.1 & 10.2 & 0.505 \\
-$\sigma$ = 4 & 0.27 & 73.4 & 50.9 & 27.1 & 0.506 \\
+non-private & $\infty$ & 91.5 &  &  & 0.41 & 13 & 0.523 \\
+clip only ($\sigma$=0) & $\infty$ & 84.7 & 88.5 & 91.7 & 0.85 & 42 & 0.505 \\
+$\sigma$ = 0.5 & 14.28 & 84.6 & 86.2 & 81.3 & 0.86 & 30 & 0.505 \\
+$\sigma$ = 1 & 1.76 & 84.1 & 81.5 & 54.5 & 0.93 & 37 & 0.506 \\
+$\sigma$ = 2 & 0.62 & 81.6 & 71.1 & 10.2 & 1.55 & 42 & 0.505 \\
+$\sigma$ = 4 & 0.27 & 73.4 & 50.9 & 27.1 & 5.52 & 52 & 0.506 \\
 \bottomrule
 \end{longtable}}
 \begin{figure}[H]\centering
@@ -165,6 +165,8 @@ $\sigma$ = 4 & 0.27 & 73.4 & 50.9 & 27.1 & 0.506 \\
 \item \textbf{Small C} biases the update (clip-only C = 0.5: 84.7\%).
 \item \textbf{Large C} keeps the gradient but the noise $\sigma$C overwhelms it (C = 8 with $\sigma$ $\geq$ 1 fails to train).
 \item \textbf{Best C shrinks as $\sigma$ grows} (C = 2 best at $\sigma$ = 0.5, C = 0.5 for $\sigma$ $\geq$ 1).
+\item \textbf{Test loss} rises with noise (0.41 non-private $\rightarrow$ 0.93 at $\sigma$ = 1 $\rightarrow$ 5.52 at $\sigma$ = 4, C = 0.5): noisy models become poorly calibrated.
+\item \textbf{Training time:} 12.5 s for the non-private model vs 21--57 s for DP (1.7--4.6$\times$ slower), because every example's gradient is computed and clipped separately. Optimiser for all runs: SGD, lr 0.05, momentum 0.9, batch 256, 20 epochs.
 \end{itemize}
 \begin{figure}[H]\centering
 \includegraphics[width=1.00\linewidth]{figures/q3_fig6.png}

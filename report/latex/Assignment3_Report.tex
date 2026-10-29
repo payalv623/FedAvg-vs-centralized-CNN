@@ -392,29 +392,37 @@ The same CNN as Q2 (no BatchNorm, which DP-SGD requires because BN mixes example
 \textbf{Experiments} (3 seeds each, 72 runs): (A) $\sigma$ $\in$ \{0.5, 1, 2, 4\} $\times$ C $\in$ \{0.5, 2, 8\}, plus clip-only runs ($\sigma$ = 0) for each C and the non-private baseline; (B) training-set size N $\in$ \{3k, 10k, 30k, 60k\}, non-private vs DP ($\sigma$=1, C=0.5); (C) training duration, 100 epochs on N = 3,000. The clipping norms were chosen from measured per-example gradient norms (median \textasciitilde{}0.5 later in training, 90th percentile \textasciitilde{}16).
 
 \subsection*{3.2 Results: privacy, utility and convergence}
+\textbf{Training record.} Every run logs test accuracy, test loss and training time after each epoch; the tables below give the final values (mean over 3 seeds). \textbf{Optimiser settings}, identical for private and non-private runs: SGD with learning rate 0.05, momentum 0.9, no weight decay, batch size 256 (expected size under Poisson sampling for DP), 20 epochs (100 in the duration experiment). \textbf{Training time} counts only the optimisation steps (forward, backward, clipping, noise and update), not the evaluation, on one GPU.
+
+{\small \textbf{Table 3.2.} Final results after 20 epochs on N = 60,000 (mean over 3 seeds).}
+
 {\scriptsize\setlength{\tabcolsep}{3pt}
-\begin{longtable}{>{\raggedright\arraybackslash}p{0.093\linewidth}>{\raggedright\arraybackslash}p{0.037\linewidth}>{\raggedright\arraybackslash}p{0.143\linewidth}>{\raggedright\arraybackslash}p{0.075\linewidth}>{\raggedright\arraybackslash}p{0.125\linewidth}>{\raggedright\arraybackslash}p{0.050\linewidth}>{\raggedright\arraybackslash}p{0.081\linewidth}>{\raggedright\arraybackslash}p{0.087\linewidth}>{\raggedright\arraybackslash}p{0.081\linewidth}>{\raggedright\arraybackslash}p{0.087\linewidth}}
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.087\linewidth}>{\raggedright\arraybackslash}p{0.035\linewidth}>{\raggedright\arraybackslash}p{0.133\linewidth}>{\raggedright\arraybackslash}p{0.052\linewidth}>{\raggedright\arraybackslash}p{0.069\linewidth}>{\raggedright\arraybackslash}p{0.115\linewidth}>{\raggedright\arraybackslash}p{0.046\linewidth}>{\raggedright\arraybackslash}p{0.075\linewidth}>{\raggedright\arraybackslash}p{0.081\linewidth}>{\raggedright\arraybackslash}p{0.075\linewidth}>{\raggedright\arraybackslash}p{0.081\linewidth}}
 \toprule
-\textbf{Run} & \textbf{N} & \textbf{Test acc. \% (mean $\pm$ sd)} & \textbf{$\varepsilon$ ($\delta$=10\textsuperscript{-5})} & \textbf{MIA AUC [95\% CI]} & \textbf{MIA adv.} & \textbf{DP adv. bound} & \textbf{Train$-$test gap} & \textbf{Clipped frac.} & \textbf{Train time (s)} \\
+\textbf{Run} & \textbf{N} & \textbf{Test acc. \% (mean $\pm$ sd)} & \textbf{Test loss} & \textbf{$\varepsilon$ ($\delta$=10\textsuperscript{-5})} & \textbf{MIA AUC [95\% CI]} & \textbf{MIA adv.} & \textbf{DP adv. bound} & \textbf{Train$-$test gap} & \textbf{Clipped frac.} & \textbf{Train time (s)} \\
 \midrule\endhead
-non-private & 60,000 & 91.5 $\pm$ 0.3 & $\infty$ & 0.523 [0.515, 0.531] & 0.083 & 1.000 & 0.072 & -- & 13 \\
-clip-only C=0.5 & 60,000 & 84.7 $\pm$ 0.7 & $\infty$ & 0.505 [0.497, 0.513] & 0.012 & 1.000 & 0.008 & 33.8\% & 42 \\
-DP s=0.5 C=0.5 & 60,000 & 84.6 $\pm$ 0.5 & 14.28 & 0.505 [0.497, 0.513] & 0.010 & 1.000 & 0.008 & 34.0\% & 30 \\
-DP s=1.0 C=0.5 & 60,000 & 84.1 $\pm$ 0.3 & 1.76 & 0.506 [0.498, 0.514] & 0.011 & 0.706 & 0.009 & 33.9\% & 37 \\
-DP s=2.0 C=0.5 & 60,000 & 81.6 $\pm$ 0.2 & 0.62 & 0.505 [0.497, 0.513] & 0.003 & 0.299 & 0.006 & 33.5\% & 42 \\
-DP s=4.0 C=0.5 & 60,000 & 73.4 $\pm$ 0.3 & 0.27 & 0.506 [0.498, 0.514] & 0.005 & 0.136 & 0.010 & 33.7\% & 52 \\
-clip-only C=2.0 & 60,000 & 88.5 $\pm$ 0.1 & $\infty$ & 0.507 [0.499, 0.515] & 0.012 & 1.000 & 0.014 & 22.7\% & 44 \\
-DP s=0.5 C=2.0 & 60,000 & 86.2 $\pm$ 0.3 & 14.28 & 0.507 [0.499, 0.515] & 0.014 & 1.000 & 0.013 & 23.8\% & 56 \\
-DP s=1.0 C=2.0 & 60,000 & 81.5 $\pm$ 0.4 & 1.76 & 0.507 [0.499, 0.515] & 0.007 & 0.706 & 0.012 & 27.9\% & 52 \\
-DP s=2.0 C=2.0 & 60,000 & 71.1 $\pm$ 0.8 & 0.62 & 0.503 [0.495, 0.511] & 0.007 & 0.299 & 0.007 & 40.9\% & 49 \\
-DP s=4.0 C=2.0 & 60,000 & 50.9 $\pm$ 16.8 & 0.27 & 0.504 [0.496, 0.512] & 0.009 & 0.136 & 0.006 & 31.7\% & 57 \\
-clip-only C=8.0 & 60,000 & 91.7 $\pm$ 0.3 & $\infty$ & 0.512 [0.504, 0.520] & 0.041 & 1.000 & 0.035 & 10.6\% & 57 \\
-DP s=0.5 C=8.0 & 60,000 & 81.3 $\pm$ 0.5 & 14.28 & 0.504 [0.496, 0.512] & 0.005 & 1.000 & 0.010 & 28.3\% & 54 \\
-DP s=1.0 C=8.0 & 60,000 & 54.5 $\pm$ 10.9 & 1.76 & 0.502 [0.494, 0.510] & 0.006 & 0.706 & 0.004 & 9.3\% & 23 \\
-DP s=2.0 C=8.0 & 60,000 & 10.2 $\pm$ 0.2 & 0.62 & 0.502 [0.494, 0.510] & 0.001 & 0.299 & -0.000 & 1.4\% & 21 \\
-DP s=4.0 C=8.0 & 60,000 & 27.1 $\pm$ 27.2 & 0.27 & 0.500 [0.492, 0.508] & -0.001 & 0.136 & -0.002 & 17.0\% & 21 \\
+non-private & 60,000 & 91.5 $\pm$ 0.3 & 0.409 & $\infty$ & 0.523 [0.515, 0.531] & 0.083 & 1.000 & 0.072 & -- & 13 \\
+clip-only C=0.5 & 60,000 & 84.7 $\pm$ 0.7 & 0.847 & $\infty$ & 0.505 [0.497, 0.513] & 0.012 & 1.000 & 0.008 & 33.8\% & 42 \\
+DP s=0.5 C=0.5 & 60,000 & 84.6 $\pm$ 0.5 & 0.856 & 14.28 & 0.505 [0.497, 0.513] & 0.010 & 1.000 & 0.008 & 34.0\% & 30 \\
+DP s=1.0 C=0.5 & 60,000 & 84.1 $\pm$ 0.3 & 0.931 & 1.76 & 0.506 [0.498, 0.514] & 0.011 & 0.706 & 0.009 & 33.9\% & 37 \\
+DP s=2.0 C=0.5 & 60,000 & 81.6 $\pm$ 0.2 & 1.548 & 0.62 & 0.505 [0.497, 0.513] & 0.003 & 0.299 & 0.006 & 33.5\% & 42 \\
+DP s=4.0 C=0.5 & 60,000 & 73.4 $\pm$ 0.3 & 5.523 & 0.27 & 0.506 [0.498, 0.514] & 0.005 & 0.136 & 0.010 & 33.7\% & 52 \\
+clip-only C=2.0 & 60,000 & 88.5 $\pm$ 0.1 & 0.581 & $\infty$ & 0.507 [0.499, 0.515] & 0.012 & 1.000 & 0.014 & 22.7\% & 44 \\
+DP s=0.5 C=2.0 & 60,000 & 86.2 $\pm$ 0.3 & 0.956 & 14.28 & 0.507 [0.499, 0.515] & 0.014 & 1.000 & 0.013 & 23.8\% & 56 \\
+DP s=1.0 C=2.0 & 60,000 & 81.5 $\pm$ 0.4 & 1.675 & 1.76 & 0.507 [0.499, 0.515] & 0.007 & 0.706 & 0.012 & 27.9\% & 52 \\
+DP s=2.0 C=2.0 & 60,000 & 71.1 $\pm$ 0.8 & 3.529 & 0.62 & 0.503 [0.495, 0.511] & 0.007 & 0.299 & 0.007 & 40.9\% & 49 \\
+DP s=4.0 C=2.0 & 60,000 & 50.9 $\pm$ 16.8 & 82.501 & 0.27 & 0.504 [0.496, 0.512] & 0.009 & 0.136 & 0.006 & 31.7\% & 57 \\
+clip-only C=8.0 & 60,000 & 91.7 $\pm$ 0.3 & 0.367 & $\infty$ & 0.512 [0.504, 0.520] & 0.041 & 1.000 & 0.035 & 10.6\% & 57 \\
+DP s=0.5 C=8.0 & 60,000 & 81.3 $\pm$ 0.5 & 1.062 & 14.28 & 0.504 [0.496, 0.512] & 0.005 & 1.000 & 0.010 & 28.3\% & 54 \\
+DP s=1.0 C=8.0 & 60,000 & 54.5 $\pm$ 10.9 & 4.947 & 1.76 & 0.502 [0.494, 0.510] & 0.006 & 0.706 & 0.004 & 9.3\% & 23 \\
+DP s=2.0 C=8.0 & 60,000 & 10.2 $\pm$ 0.2 & 51.948 & 0.62 & 0.502 [0.494, 0.510] & 0.001 & 0.299 & -0.000 & 1.4\% & 21 \\
+DP s=4.0 C=8.0 & 60,000 & 27.1 $\pm$ 27.2 & 6,282 & 0.27 & 0.500 [0.492, 0.508] & -0.001 & 0.136 & -0.002 & 17.0\% & 21 \\
 \bottomrule
 \end{longtable}}
+\begin{itemize}
+\item \textbf{Test loss} rises with the noise level faster than accuracy falls: 0.41 for the non-private model, 0.93 for $\sigma$ = 1, C = 0.5 and 5.52 for $\sigma$ = 4, C = 0.5, i.e. noisy models become poorly calibrated even when their accuracy is still reasonable. With C = 8 and $\sigma$ $\geq$ 1 the loss explodes (4.9 to 6,282), confirming that these runs do not train.
+\item \textbf{Training time:} the non-private model trains in 12.5 s for 20 epochs, the DP runs in 21--57 s, i.e. about 1.7--4.6$\times$ slower, because a gradient must be computed and clipped for every example separately.
+\end{itemize}
 \begin{figure}[H]\centering
 \includegraphics[width=0.92\linewidth]{figures/q3_fig1.png}
 \caption*{\small \textbf{Figure 3.1.} Test accuracy after 20 epochs against the achieved privacy budget $\varepsilon$ (log scale), per clipping norm. Dotted lines: clip-only runs ($\sigma$=0); dashed: non-private baseline.}
@@ -438,20 +446,20 @@ DP s=4.0 C=8.0 & 60,000 & 27.1 $\pm$ 27.2 & 0.27 & 0.500 [0.492, 0.508] & -0.001
 \item \textbf{Dataset size.} Smaller datasets mean a larger sampling rate q = B/\allowbreak{}N, so each example is used more often: at a fixed 20 epochs, $\varepsilon$ grows from 1.76 (N = 60k) to 2.6 (30k), 5.0 (10k) and 10.2 (3k), and DP accuracy falls from 84.1\% to 72.2\%. The non-private models leak more on small data (AUC 0.546 at 3k vs 0.523 at 60k), which is exactly where DP matters most. (B and the epoch count were held fixed, so q and T both change with N.)
 \end{itemize}
 {\scriptsize\setlength{\tabcolsep}{3pt}
-\begin{longtable}{>{\raggedright\arraybackslash}p{0.115\linewidth}>{\raggedright\arraybackslash}p{0.036\linewidth}>{\raggedright\arraybackslash}p{0.139\linewidth}>{\raggedright\arraybackslash}p{0.073\linewidth}>{\raggedright\arraybackslash}p{0.121\linewidth}>{\raggedright\arraybackslash}p{0.048\linewidth}>{\raggedright\arraybackslash}p{0.079\linewidth}>{\raggedright\arraybackslash}p{0.085\linewidth}>{\raggedright\arraybackslash}p{0.079\linewidth}>{\raggedright\arraybackslash}p{0.085\linewidth}}
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.107\linewidth}>{\raggedright\arraybackslash}p{0.034\linewidth}>{\raggedright\arraybackslash}p{0.129\linewidth}>{\raggedright\arraybackslash}p{0.051\linewidth}>{\raggedright\arraybackslash}p{0.067\linewidth}>{\raggedright\arraybackslash}p{0.112\linewidth}>{\raggedright\arraybackslash}p{0.045\linewidth}>{\raggedright\arraybackslash}p{0.073\linewidth}>{\raggedright\arraybackslash}p{0.079\linewidth}>{\raggedright\arraybackslash}p{0.073\linewidth}>{\raggedright\arraybackslash}p{0.079\linewidth}}
 \toprule
-\textbf{Run} & \textbf{N} & \textbf{Test acc. \% (mean $\pm$ sd)} & \textbf{$\varepsilon$ ($\delta$=10\textsuperscript{-5})} & \textbf{MIA AUC [95\% CI]} & \textbf{MIA adv.} & \textbf{DP adv. bound} & \textbf{Train$-$test gap} & \textbf{Clipped frac.} & \textbf{Train time (s)} \\
+\textbf{Run} & \textbf{N} & \textbf{Test acc. \% (mean $\pm$ sd)} & \textbf{Test loss} & \textbf{$\varepsilon$ ($\delta$=10\textsuperscript{-5})} & \textbf{MIA AUC [95\% CI]} & \textbf{MIA adv.} & \textbf{DP adv. bound} & \textbf{Train$-$test gap} & \textbf{Clipped frac.} & \textbf{Train time (s)} \\
 \midrule\endhead
-non-private N=3000 & 3,000 & 84.8 $\pm$ 0.6 & $\infty$ & 0.546 [0.531, 0.560] & 0.109 & 1.000 & 0.103 & -- & 0 \\
-DP N=3000 & 3,000 & 72.2 $\pm$ 0.8 & 10.20 & 0.509 [0.495, 0.524] & 0.001 & 1.000 & 0.019 & 66.0\% & 1 \\
-non-private N=10000 & 10,000 & 88.0 $\pm$ 1.2 & $\infty$ & 0.534 [0.526, 0.542] & 0.098 & 1.000 & 0.093 & -- & 1 \\
-DP N=10000 & 10,000 & 77.4 $\pm$ 1.3 & 5.00 & 0.508 [0.500, 0.516] & 0.005 & 0.987 & 0.010 & 49.7\% & 3 \\
-non-private N=30000 & 30,000 & 90.5 $\pm$ 0.5 & $\infty$ & 0.525 [0.517, 0.533] & 0.093 & 1.000 & 0.083 & -- & 3 \\
-DP N=30000 & 30,000 & 81.9 $\pm$ 0.9 & 2.61 & 0.506 [0.498, 0.514] & 0.013 & 0.863 & 0.008 & 40.0\% & 11 \\
-non-private & 60,000 & 91.5 $\pm$ 0.3 & $\infty$ & 0.523 [0.515, 0.531] & 0.083 & 1.000 & 0.072 & -- & 13 \\
-DP s=1.0 C=0.5 & 60,000 & 84.1 $\pm$ 0.3 & 1.76 & 0.506 [0.498, 0.514] & 0.011 & 0.706 & 0.009 & 33.9\% & 37 \\
-non-private long & 3,000 & 86.1 $\pm$ 0.1 & $\infty$ & 0.567 [0.552, 0.581] & 0.246 & 1.000 & 0.139 & -- & 1 \\
-DP long & 3,000 & 78.6 $\pm$ 1.0 & 25.05 & 0.514 [0.499, 0.528] & 0.022 & 1.000 & 0.025 & 44.3\% & 5 \\
+non-private N=3000 & 3,000 & 84.8 $\pm$ 0.6 & 0.498 & $\infty$ & 0.546 [0.531, 0.560] & 0.109 & 1.000 & 0.103 & -- & 0 \\
+DP N=3000 & 3,000 & 72.2 $\pm$ 0.8 & 0.938 & 10.20 & 0.509 [0.495, 0.524] & 0.001 & 1.000 & 0.019 & 66.0\% & 1 \\
+non-private N=10000 & 10,000 & 88.0 $\pm$ 1.2 & 0.427 & $\infty$ & 0.534 [0.526, 0.542] & 0.098 & 1.000 & 0.093 & -- & 1 \\
+DP N=10000 & 10,000 & 77.4 $\pm$ 1.3 & 1.035 & 5.00 & 0.508 [0.500, 0.516] & 0.005 & 0.987 & 0.010 & 49.7\% & 3 \\
+non-private N=30000 & 30,000 & 90.5 $\pm$ 0.5 & 0.430 & $\infty$ & 0.525 [0.517, 0.533] & 0.093 & 1.000 & 0.083 & -- & 3 \\
+DP N=30000 & 30,000 & 81.9 $\pm$ 0.9 & 0.947 & 2.61 & 0.506 [0.498, 0.514] & 0.013 & 0.863 & 0.008 & 40.0\% & 11 \\
+non-private & 60,000 & 91.5 $\pm$ 0.3 & 0.409 & $\infty$ & 0.523 [0.515, 0.531] & 0.083 & 1.000 & 0.072 & -- & 13 \\
+DP s=1.0 C=0.5 & 60,000 & 84.1 $\pm$ 0.3 & 0.931 & 1.76 & 0.506 [0.498, 0.514] & 0.011 & 0.706 & 0.009 & 33.9\% & 37 \\
+non-private long & 3,000 & 86.1 $\pm$ 0.1 & 1.025 & $\infty$ & 0.567 [0.552, 0.581] & 0.246 & 1.000 & 0.139 & -- & 1 \\
+DP long & 3,000 & 78.6 $\pm$ 1.0 & 1.071 & 25.05 & 0.514 [0.499, 0.528] & 0.022 & 1.000 & 0.025 & 44.3\% & 5 \\
 \bottomrule
 \end{longtable}}
 \begin{figure}[H]\centering
@@ -544,6 +552,8 @@ DP long & 3,000 & 78.6 $\pm$ 1.0 & 25.05 & 0.514 [0.499, 0.528] & 0.022 & 1.000 
 73 & {\ttfamily\footnotesize push the latex report code in the repo okay} \\
 74 & {\ttfamily\footnotesize yes push} \\
 75 & {\ttfamily\footnotesize thanks - have yuou update the report right} \\
+76 & {\ttfamily\footnotesize The report describes per-example clipping, Gaussian noise, privacy accounting, more than the required number of noise and clipping settings, a non-private baseline, an accuracy--privacy plot, and a membership inference attack. It does not clearly report test loss or elapsed training time, both requested.\newline do it and push the code now} \\
+77 & {\ttfamily\footnotesize do faster} \\
 \bottomrule
 \end{longtable}}
 \clearpage

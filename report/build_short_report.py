@@ -84,17 +84,18 @@ def short_tables():
     g = s3[s3.exp == "grid"]
     npv = g[g.name == "non-private"].iloc[0]
     rows = [{"s": "non-private", "eps": "&infin;", "c05": f"{100 * npv.test_acc:.1f}", "c2": "", "c8": "",
-             "auc": f"{npv.mia_auc:.3f}"}]
+             "auc": f"{npv.mia_auc:.3f}", "loss": f"{npv.test_loss:.2f}", "time": f"{npv.train_s:.0f}"}]
     for sig in [0.0, 0.5, 1.0, 2.0, 4.0]:
         d = g[(g.sigma == sig) & (g.name != "non-private")].set_index("clip")
         eps = d.epsilon.iloc[0]
         rows.append({"s": "clip only (&sigma;=0)" if sig == 0 else f"&sigma; = {sig:g}",
                      "eps": "&infin;" if eps == float("inf") else f"{eps:.2f}",
                      "c05": f"{100 * d.loc[0.5, 'test_acc']:.1f}", "c2": f"{100 * d.loc[2.0, 'test_acc']:.1f}",
-                     "c8": f"{100 * d.loc[8.0, 'test_acc']:.1f}", "auc": f"{d.loc[0.5, 'mia_auc']:.3f}"})
-    t_q3 = BR.table(pd.DataFrame(rows), ["s", "eps", "c05", "c2", "c8", "auc"],
+                     "c8": f"{100 * d.loc[8.0, 'test_acc']:.1f}", "auc": f"{d.loc[0.5, 'mia_auc']:.3f}",
+                     "loss": f"{d.loc[0.5, 'test_loss']:.2f}", "time": f"{d.loc[0.5, 'train_s']:.0f}"})
+    t_q3 = BR.table(pd.DataFrame(rows), ["s", "eps", "c05", "c2", "c8", "loss", "time", "auc"],
                     ["Setting (N=60k, 20 epochs)", "&epsilon; (&delta;=10<sup>-5</sup>)", "Acc. % C=0.5", "C=2",
-                     "C=8", "MIA AUC (C=0.5)"], cls="small")
+                     "C=8", "Test loss (C=0.5)", "Train time s (C=0.5)", "MIA AUC (C=0.5)"], cls="small")
     sz = s3[s3.exp.isin(["size", "duration"])].copy()
     sz = pd.concat([sz, g[g.name.isin(["non-private", "DP s=1.0 C=0.5"])]])
     rows = []
@@ -254,6 +255,8 @@ C = 0.5; non-private 91.5%). &epsilon; &asymp; 1.8 costs about 7 pp; convergence
 <li><b>Small C</b> biases the update (clip-only C = 0.5: 84.7%).</li>
 <li><b>Large C</b> keeps the gradient but the noise &sigma;C overwhelms it (C = 8 with &sigma; &ge; 1 fails to train).</li>
 <li><b>Best C shrinks as &sigma; grows</b> (C = 2 best at &sigma; = 0.5, C = 0.5 for &sigma; &ge; 1).</li>
+<li><b>Test loss</b> rises with noise (0.41 non-private &rarr; 0.93 at &sigma; = 1 &rarr; 5.52 at &sigma; = 4, C = 0.5): noisy models become poorly calibrated.</li>
+<li><b>Training time:</b> 12.5 s for the non-private model vs 21&ndash;57 s for DP (1.7&ndash;4.6&times; slower), because every example's gradient is computed and clipped separately. Optimiser for all runs: SGD, lr 0.05, momentum 0.9, batch 256, 20 epochs.</li>
 </ul>
 {fig(F3 / "fig6_training_duration.png", "q3_fig6.png", "<b>Fig. 5.</b> Training duration (N = 3,000, 100 epochs): train vs test accuracy, membership-inference AUC, and &epsilon; spent by the DP run (&sigma; = 1, C = 0.5).")}
 <p class='note'><b>Dataset size and duration</b> (non-private / DP with &sigma; = 1, C = 0.5; 20 epochs unless stated):</p>
