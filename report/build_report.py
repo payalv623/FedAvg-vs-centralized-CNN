@@ -309,6 +309,15 @@ PROMPT_LOG = [
     ('64', '', 'start more paralel processin'),
     ('65', '', 'done?'),
     ('66', '', 'and give the report in latext format and also push the report in github okay'),
+    ('67', '', 'if done>?'),
+    ('68', '', 'push the code'),
+    ('69', '', 'also put my prompts'),
+    ('70', "Answer to the assistant's question on which prompts to add", '20 audit prompts → GitHub'),
+    ('71', '', 'also delete allthe older prompts okay'),
+    ('72', '', 'have you updated all the code'),
+    ('73', '', 'push the latex report code in the repo okay'),
+    ('74', '', 'yes push'),
+    ('75', '', 'thanks - have yuou update the report right'),
 ]
 
 
