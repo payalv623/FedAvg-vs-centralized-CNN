@@ -321,6 +321,7 @@ PROMPT_LOG = [
     ('75', '', 'thanks - have yuou update the report right'),
     ('76', '', 'The report describes per-example clipping, Gaussian noise, privacy accounting, more than the required number of noise and clipping settings, a non-private baseline, an accuracy–privacy plot, and a membership inference attack. It does not clearly report test loss or elapsed training time, both requested.\ndo it and push the code now'),
     ('77', '', 'do faster'),
+    ('78', '', 'please push the code as soon as done and also after pushing update both the report pdf and latex \n\nand push everything updated okay'),
 ]
 
 
